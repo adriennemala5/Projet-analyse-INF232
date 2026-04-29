@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+<div class="card-modern">
+    <div class="card-title">📋 Liste des avis étudiants</div>
+    <div class="card-subtitle">Tous les participants à l'étude</div>
+
+    {% if avis %}
+    <div class="table-container">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Filière</th>
+                    <th>Âge</th>
+                    <th>Niveau</th>
+                    <th>Étude</th>
+                    <th>Sommeil</th>
+                    <th>Note</th>
+                    <th>Satisfaction</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in avis %}
+                <tr>
+                    <td><strong>{{ a.filiere }}</strong></td>
+                    <td>{{ a.age }}</td>
+                    <td>{{ a.niveau }}</td>
+                    <td>{{ a.heures_etude }}h</td>
+                    <td>{{ a.heures_sommeil }}h</td>
+                    <td><strong>{{ a.note_moyenne }}/20</strong></td>
+                    <td>{{ a.satisfaction }}/5</td>
+                    <td>{{ a.date_creation[:10] if a.date_creation else '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top: 20px; text-align: center;">
+        <span class="badge-strong">📊 Total: {{ avis|length }} participants</span>
+    </div>
+    {% else %}
+    <div class="message message-error">⚠️ Aucun avis pour le moment. <a href="/" style="color:#667eea">Soyez le premier
+            !</a></div>
+    {% endif %}
+</div>
+{% endblock %}

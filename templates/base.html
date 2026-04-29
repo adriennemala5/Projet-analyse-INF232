@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow | Analyse Académique</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="header-classic">
+            <div class="logo-area">
+                <h1>📊 StudyFlow Analytics</h1>
+                <p>Analyse de la corrélation entre habitudes d'étude, sommeil et performances académiques</p>
+            </div>
+            <div class="nav-tabs">
+                <a href="/" class="nav-tab {% if request.path == '/' %}active{% endif %}">🏠 Accueil</a>
+                <a href="/formulaire" class="nav-tab {% if request.path == '/formulaire' %}active{% endif %}">📝
+                    Collecte</a>
+                <a href="/statistiques/resultats"
+                    class="nav-tab {% if '/resultats' in request.path %}active{% endif %}">📈 Résultats</a>
+                <a href="/statistiques" class="nav-tab {% if request.path == '/statistiques' %}active{% endif %}">🔬
+                    Analyse</a>
+                <a href="/donnees/liste" class="nav-tab {% if '/liste' in request.path %}active{% endif %}">📋 Liste</a>
+            </div>
+        </div>
+
+        {% block contenu %}{% endblock %}
+
+        <div class="footer-classic">
+            <p>© 2026 - INF232 EC2 - Application de collecte et analyse des données</p>
+        </div>
+    </div>
+</body>
+</html>

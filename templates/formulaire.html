@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+<div class="card-modern">
+    <div class="card-title">📝 Formulaire d'enquête</div>
+    <div class="card-subtitle">Partagez vos habitudes d'étude pour contribuer à la recherche</div>
+
+    <form id="avisForm">
+        <div class="form-grid">
+            <div class="form-field">
+                <label class="form-label">Filière <span class="required">*</span></label>
+                <select name="filiere" class="form-select" required>
+                    <option value="">Sélectionnez votre filière</option>
+                    <option>Informatique</option>
+                    <option>Mathématiques</option>
+                    <option>Physique</option>
+                    <option>Chimie</option>
+                    <option>Biologie</option>
+                    <option>Lettres modernes</option>
+                    <option>Droit</option>
+                    <option>Économie</option>
+                    <option>Gestion</option>
+                    <option>Autre</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label">Âge <span class="required">*</span></label>
+                <input type="number" name="age" class="form-input" placeholder="Ex: 22" min="16" max="100" required>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label">Niveau d'étude <span class="required">*</span></label>
+                <select name="niveau" class="form-select" required>
+                    <option value="">Sélectionnez</option>
+                    <option>Licence 1</option>
+                    <option>Licence 2</option>
+                    <option>Licence 3</option>
+                    <option>Master 1</option>
+                    <option>Master 2</option>
+                    <option>Doctorat</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label">Heures d'étude/jour <span class="required">*</span></label>
+                <input type="number" name="heures_etude" class="form-input" step="0.5" min="0" max="24" required>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label">Heures de sommeil/nuit <span class="required">*</span></label>
+                <input type="number" name="heures_sommeil" class="form-input" step="0.5" min="0" max="24" required>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label">Note moyenne <span class="required">*</span></label>
+                <input type="number" name="note_moyenne" class="form-input" step="0.1" min="0" max="20" required>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label">Satisfaction (1-5) <span class="required">*</span></label>
+                <input type="number" name="satisfaction" class="form-input" min="1" max="5" required>
+            </div>
+
+            <div class="form-field full-width">
+                <label class="form-label">Commentaire</label>
+                <textarea name="commentaire" class="form-textarea" placeholder="Votre expérience..."></textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn-primary">✨ Soumettre mon avis</button>
+    </form>
+    <div id="message" class="message" style="display: none;"></div>
+</div>
+
+<script>
+    document.getElementById('avisForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const msgDiv = document.getElementById('message');
+
+        try {
+            const response = await fetch('/donnees/soumettre', { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (result.succes) {
+                msgDiv.className = 'message message-success';
+                msgDiv.innerHTML = '✅ ' + result.message;
+                msgDiv.style.display = 'block';
+                e.target.reset();
+                setTimeout(() => { window.location.href = '/statistiques/resultats'; }, 2000);
+            } else {
+                msgDiv.className = 'message message-error';
+                msgDiv.innerHTML = '❌ ' + (result.erreur || 'Erreur');
+                msgDiv.style.display = 'block';
+            }
+        } catch (error) {
+            msgDiv.className = 'message message-error';
+            msgDiv.innerHTML = '❌ Erreur de connexion';
+            msgDiv.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

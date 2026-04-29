@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+<!-- Section Hero -->
+<div class="hero-section"
+    style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); border-radius: 24px; padding: 50px 40px; margin-bottom: 30px; color: white;">
+    <div style="max-width: 700px;">
+        <h1 style="font-size: 42px; margin-bottom: 20px;">📊 StudyFlow Analytics</h1>
+        <p style="font-size: 18px; line-height: 1.6; margin-bottom: 30px; opacity: 0.95;">
+            Analysez la corrélation entre les habitudes d'étude, le sommeil et les performances académiques.
+            Une application développée dans le cadre du programme INF232 EC2.
+        </p>
+        <a href="/formulaire"
+            style="display: inline-block; background: white; color: #2563eb; padding: 12px 32px; border-radius: 40px; text-decoration: none; font-weight: 700;">
+            ✨ Commencer l'enquête
+        </a>
+    </div>
+</div>
+
+<!-- Objectifs -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px;">
+    <div class="card-modern" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 15px;">📚</div>
+        <h3 style="margin-bottom: 10px;">Collecte de données</h3>
+        <p style="color: var(--gray); font-size: 14px;">Recueillez anonymement les habitudes d'étude des étudiants.</p>
+    </div>
+    <div class="card-modern" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 15px;">📈</div>
+        <h3 style="margin-bottom: 10px;">Analyse statistique</h3>
+        <p style="color: var(--gray); font-size: 14px;">Calculez les corrélations et statistiques descriptives.</p>
+    </div>
+    <div class="card-modern" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 15px;">📊</div>
+        <h3 style="margin-bottom: 10px;">Visualisation</h3>
+        <p style="color: var(--gray); font-size: 14px;">Graphiques interactifs pour visualiser les tendances.</p>
+    </div>
+</div>
+
+<!-- Fonctionnalités -->
+<div class="card-modern" style="margin-bottom: 30px;">
+    <h2 style="margin-bottom: 20px;">🔍 Fonctionnalités</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #2563eb;">✅</span> Collecte anonyme des avis
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #2563eb;">✅</span> Statistiques descriptives
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #2563eb;">✅</span> Corrélation de Pearson
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #2563eb;">✅</span> Nuages de points
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #2563eb;">✅</span> Diagrammes en barres
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #2563eb;">✅</span> Camembert et histogrammes
+        </div>
+    </div>
+</div>
+
+<!-- À propos -->
+<div class="card-modern">
+    <h2 style="margin-bottom: 15px;">👩‍💻 À propos</h2>
+    <p style="color: var(--gray); line-height: 1.6; margin-bottom: 15px;">
+        Cette application a été développée dans le cadre du programme <strong>INF232 EC2</strong>.
+        Elle permet d'étudier la relation entre les heures d'étude, les heures de sommeil et les notes obtenues.
+    </p>
+    <p style="color: var(--gray); line-height: 1.6;">
+        Les données sont stockées localement et peuvent être exportées pour des analyses plus poussées.
+    </p>
+</div>
+{% endblock %}

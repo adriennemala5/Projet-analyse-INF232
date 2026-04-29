@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+<div id="resultat" class="loader">
+    <div class="spinner"></div>
+    <p>Chargement des résultats...</p>
+</div>
+
+<script>
+    async function chargerResultats() {
+        try {
+            const reponse = await fetch('/statistiques/donnees');
+            const donnees = await reponse.json();
+
+            if (!donnees.statistiques_globales || donnees.statistiques_globales.total_etudiants === 0) {
+                document.getElementById('resultat').innerHTML = '<div class="message message-error">⚠️ Aucune donnée disponible. Soumettez des avis.</div>';
+                return;
+            }
+
+            const stats = donnees.statistiques_globales;
+            const analyse = donnees.analyse;
+
+            let html = '';
+
+            // Cartes récapitulatives
+            html += '<div class="stats-grid">';
+            html += `<div class="stat-card-modern"><div class="stat-icon">👥</div><div class="stat-label">Total étudiants</div><div class="stat-value">${stats.total_etudiants}</div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">🎓</div><div class="stat-label">Note moyenne</div><div class="stat-value">${stats.moyenne_notes}<span class="stat-unit">/20</span></div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">📚</div><div class="stat-label">Étude moyenne</div><div class="stat-value">${stats.moyenne_heures_etude}<span class="stat-unit">h/jour</span></div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">😴</div><div class="stat-label">Sommeil moyen</div><div class="stat-value">${stats.moyenne_heures_sommeil}<span class="stat-unit">h/nuit</span></div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">⭐</div><div class="stat-label">Satisfaction moyenne</div><div class="stat-value">${stats.moyenne_satisfaction}<span class="stat-unit">/5</span></div></div>`;
+            html += '</div>';
+
+            // ========== NOTES ==========
+            if (analyse.statistiques_notes) {
+                const n = analyse.statistiques_notes;
+                html += '<div class="card-modern" style="margin-bottom:20px"><div class="card-title" style="font-size:20px">📊 Statistiques des NOTES (/20)</div>';
+                html += '<div class="table-container"><table class="table-modern"><tbody>';
+                html += `<tr><td><strong>Moyenne</strong></td><td>${n.moyenne}/20</td><td><strong>Médiane</strong></td><td>${n.mediane}/20</td></tr>`;
+                html += `<tr><td><strong>Écart-type</strong></td><td>${n.ecart_type}</td><td><strong>Variance</strong></td><td>${n.variance || (n.ecart_type * n.ecart_type).toFixed(2)}</td></tr>`;
+                html += `<tr><td><strong>Minimum</strong></td><td>${n.minimum}/20</td><td><strong>Maximum</strong></td><td>${n.maximum}/20</td></tr>`;
+                html += `<tr><td><strong>Étendue</strong></td><td colspan="3">${n.maximum - n.minimum}/20</td></tr>`;
+                html += '</tbody></table></div></div>';
+            }
+
+            // ========== HEURES D'ÉTUDE ==========
+            if (analyse.statistiques_etude) {
+                const e = analyse.statistiques_etude;
+                html += '<div class="card-modern" style="margin-bottom:20px"><div class="card-title" style="font-size:20px">📚 Statistiques des HEURES D\'ÉTUDE (par jour)</div>';
+                html += '<div class="table-container"><table class="table-modern"><tbody>';
+                html += `<tr><td><strong>Moyenne</strong></td><td>${e.moyenne} heures</td><td><strong>Médiane</strong></td><td>${e.mediane} heures</td></tr>`;
+                html += `<tr><td><strong>Écart-type</strong></td><td>${e.ecart_type}</td><td><strong>Variance</strong></td><td>${e.variance || (e.ecart_type * e.ecart_type).toFixed(2)}</td></tr>`;
+                html += `<tr><td><strong>Minimum</strong></td><td>${e.minimum} heures</td><td><strong>Maximum</strong></td><td>${e.maximum} heures</td></tr>`;
+                html += `<tr><td><strong>Étendue</strong></td><td colspan="3">${e.maximum - e.minimum} heures</td></tr>`;
+                html += '</tbody></table></div></div>';
+            }
+
+            // ========== HEURES DE SOMMEIL ==========
+            if (analyse.statistiques_sommeil) {
+                const s = analyse.statistiques_sommeil;
+                html += '<div class="card-modern" style="margin-bottom:20px"><div class="card-title" style="font-size:20px">😴 Statistiques des HEURES DE SOMMEIL (par nuit)</div>';
+                html += '<div class="table-container"><table class="table-modern"><tbody>';
+                html += `<tr><td><strong>Moyenne</strong></td><td>${s.moyenne} heures</td><td><strong>Médiane</strong></td><td>${s.mediane} heures</td></tr>`;
+                html += `<tr><td><strong>Écart-type</strong></td><td>${s.ecart_type}</td><td><strong>Variance</strong></td><td>${s.variance || (s.ecart_type * s.ecart_type).toFixed(2)}</td></tr>`;
+                html += `<tr><td><strong>Minimum</strong></td><td>${s.minimum} heures</td><td><strong>Maximum</strong></td><td>${s.maximum} heures</td></tr>`;
+                html += `<tr><td><strong>Étendue</strong></td><td colspan="3">${s.maximum - s.minimum} heures</td></tr>`;
+                html += '</tbody></table></div></div>';
+            }
+
+            // ========== SATISFACTION ==========
+            if (analyse.statistiques_satisfaction) {
+                const sat = analyse.statistiques_satisfaction;
+                html += '<div class="card-modern" style="margin-bottom:20px"><div class="card-title" style="font-size:20px">⭐ Statistiques de la SATISFACTION (/5)</div>';
+                html += '<div class="table-container"><table class="table-modern"><tbody>';
+                html += `<tr><td><strong>Moyenne</strong></td><td>${sat.moyenne}/5</td><td><strong>Médiane</strong></td><td>${sat.mediane}/5</td></tr>`;
+                html += `<tr><td><strong>Écart-type</strong></td><td>${sat.ecart_type}</td><td><strong>Variance</strong></td><td>${sat.variance || (sat.ecart_type * sat.ecart_type).toFixed(2)}</td></tr>`;
+                html += `<tr><td><strong>Minimum</strong></td><td>${sat.minimum}/5</td><td><strong>Maximum</strong></td><td>${sat.maximum}/5</td></tr>`;
+                html += `<tr><td><strong>Étendue</strong></td><td colspan="3">${sat.maximum - sat.minimum}/5</td></tr>`;
+                html += '</tbody></table></div></div>';
+            }
+
+            document.getElementById('resultat').innerHTML = html;
+
+        } catch (erreur) {
+            console.error("Erreur:", erreur);
+            document.getElementById('resultat').innerHTML = `<div class="message message-error">❌ Erreur: ${erreur.message}</div>`;
+        }
+    }
+    chargerResultats();
+</script>
+{% endblock %}

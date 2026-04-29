@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block contenu %}
+<div id="resultat" class="loader">
+    <div class="spinner"></div>
+    <p>Chargement des analyses...</p>
+</div>
+
+<script>
+    async function chargerAnalyse() {
+        try {
+            const reponse = await fetch('/statistiques/donnees');
+            const donnees = await reponse.json();
+
+            console.log("Données reçues:", donnees);
+
+            if (!donnees.analyse || !donnees.analyse.toutes_notes || donnees.analyse.toutes_notes.length < 2) {
+                document.getElementById('resultat').innerHTML = '<div class="message message-error">⚠️ Soumettez au moins 2 avis pour voir l\'analyse complète.</div>';
+                return;
+            }
+
+            const analyse = donnees.analyse;
+            const stats = donnees.statistiques_globales;
+            const correlations = analyse.correlations || {};
+
+            // Récupérer les données par filière
+            const avisResponse = await fetch('/donnees/api/liste');
+            const avisData = await avisResponse.json();
+            const avis = avisData.avis || [];
+
+            // Calculer les notes moyennes par filière
+            const filiereNotes = {};
+            const filiereCount = {};
+            avis.forEach(a => {
+                const filiere = a.filiere;
+                const note = parseFloat(a.note_moyenne);
+                if (!filiereNotes[filiere]) {
+                    filiereNotes[filiere] = 0;
+                    filiereCount[filiere] = 0;
+                }
+                filiereNotes[filiere] += note;
+                filiereCount[filiere]++;
+            });
+
+            const filieres = Object.keys(filiereNotes);
+            const notesMoyennes = filieres.map(f => (filiereNotes[f] / filiereCount[f]).toFixed(2));
+
+            // Données pour l'histogramme des notes
+            const bins = [0, 5, 10, 15, 20];
+            const counts = [0, 0, 0, 0];
+            analyse.toutes_notes.forEach(n => {
+                if (n < 5) counts[0]++;
+                else if (n < 10) counts[1]++;
+                else if (n < 15) counts[2]++;
+                else counts[3]++;
+            });
+
+            // Données pour le camembert (répartition des filières)
+            const filiereRepartition = {};
+            avis.forEach(a => {
+                const filiere = a.filiere;
+                filiereRepartition[filiere] = (filiereRepartition[filiere] || 0) + 1;
+            });
+            const filiereLabels = Object.keys(filiereRepartition);
+            const filiereCounts = Object.values(filiereRepartition);
+
+            // Couleurs pour les graphiques
+            const couleurs = ['#4361ee', '#4cc9f0', '#06d6a0', '#f8961e', '#ef476f', '#7209b7', '#f72585', '#4895ef'];
+
+            let html = '';
+
+            // Cartes statistiques
+            html += '<div class="stats-grid">';
+            html += `<div class="stat-card-modern"><div class="stat-icon">👥</div><div class="stat-label">Étudiants</div><div class="stat-value">${stats.total_etudiants || analyse.nbr_etudiants || 0}</div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">🎓</div><div class="stat-label">Note moyenne</div><div class="stat-value">${stats.moyenne_notes || analyse.statistiques_notes?.moyenne || 0}<span class="stat-unit">/20</span></div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">📚</div><div class="stat-label">Étude moyenne</div><div class="stat-value">${stats.moyenne_heures_etude || analyse.statistiques_etude?.moyenne || 0}<span class="stat-unit">h</span></div></div>`;
+            html += `<div class="stat-card-modern"><div class="stat-icon">😴</div><div class="stat-label">Sommeil moyen</div><div class="stat-value">${stats.moyenne_heures_sommeil || analyse.statistiques_sommeil?.moyenne || 0}<span class="stat-unit">h</span></div></div>`;
+            html += '</div>';
+
+            // LIGNE 1 : Deux nuages de points
+            html += '<div class="charts-grid">';
+
+            // Graphique 1: Nuage de points Étude vs Notes
+            html += '<div class="chart-card"><div class="chart-title">📈 Corrélation: Étude → Notes</div><canvas id="scatterEtude"></canvas>';
+            if (correlations.etude_vs_note && correlations.etude_vs_note[0] !== undefined) {
+                const r = correlations.etude_vs_note[0];
+                html += `<p style="margin-top:15px;text-align:center"><strong>Coefficient r = ${r.toFixed(4)}</strong> ${r > 0 ? '✅ Corrélation positive' : '📉 Corrélation négative'}</p>`;
+            }
+            html += '</div>';
+
+            // Graphique 2: Nuage de points Sommeil vs Notes
+            html += '<div class="chart-card"><div class="chart-title">📉 Corrélation: Sommeil → Notes</div><canvas id="scatterSommeil"></canvas>';
+            if (correlations.sommeil_vs_note && correlations.sommeil_vs_note[0] !== undefined) {
+                const r = correlations.sommeil_vs_note[0];
+                html += `<p style="margin-top:15px;text-align:center"><strong>Coefficient r = ${r.toFixed(4)}</strong> ${r > 0 ? '✅ Corrélation positive' : '📉 Corrélation négative'}</p>`;
+            }
+            html += '</div>';
+            html += '</div>';
+
+            // LIGNE 2 : Histogramme + Camembert
+            html += '<div class="charts-grid">';
+
+            // Graphique 3: Histogramme distribution des notes
+            html += '<div class="chart-card"><div class="chart-title">📊 Histogramme: Distribution des notes</div><canvas id="histogramNotes"></canvas></div>';
+
+            // Graphique 4: Camembert répartition des filières
+            html += '<div class="chart-card"><div class="chart-title">🥧 Répartition des filières</div><canvas id="pieChart"></canvas></div>';
+            html += '</div>';
+
+            // LIGNE 3 : Diagramme en barres (Filière → Note moyenne)
+            html += '<div class="charts-grid">';
+            html += '<div class="chart-card" style="grid-column: span 2;"><div class="chart-title">📊 Note moyenne par filière</div><canvas id="barChartFiliere"></canvas></div>';
+            html += '</div>';
+
+            // Tableau des corrélations
+            html += '<div class="card-modern" style="margin-top:20px"><div class="card-title" style="font-size:20px">📋 Coefficients de corrélation (Pearson)</div>';
+            html += '<div class="table-container"><table class="table-modern"><thead><tr><th>Relation</th><th>r</th><th>p-value</th><th>Force</th></tr></thead><tbody>';
+
+            if (Object.keys(correlations).length > 0) {
+                for (const [cle, valeur] of Object.entries(correlations)) {
+                    if (valeur && valeur[0] !== undefined) {
+                        const r = valeur[0];
+                        const p = valeur[1];
+                        const absR = (r < 0) ? -r : r;
+                        let badge = (absR >= 0.7) ? 'badge-strong' : (absR >= 0.4) ? 'badge-moderate' : 'badge-weak';
+                        let force = (absR >= 0.7) ? 'Forte' : (absR >= 0.4) ? 'Modérée' : 'Faible';
+                        let nom = cle.replace(/_/g, ' → ');
+                        html += `<tr><td><strong>${nom}</strong></td><td>${r.toFixed(4)}</td><td>${p.toFixed(4)}</td><td><span class="${badge}">${force}</span></td></tr>`;
+                    }
+                }
+            } else {
+                html += '<tr><td colspan="4" style="text-align:center">Soumettez plus d\'avis pour voir les corrélations</td></tr>';
+            }
+            html += '</tbody></table></div></div>';
+
+            document.getElementById('resultat').innerHTML = html;
+
+            // ========== CRÉATION DES GRAPHIQUES ==========
+
+            // 1. Nuage de points: Étude vs Notes
+            if (analyse.toutes_etudes && analyse.toutes_notes) {
+                new Chart(document.getElementById('scatterEtude'), {
+                    type: 'scatter',
+                    data: { datasets: [{ label: 'Étudiants', data: analyse.toutes_etudes.map((x, i) => ({ x: x, y: analyse.toutes_notes[i] })), backgroundColor: '#4361ee', pointRadius: 8 }] },
+                    options: { responsive: true, scales: { x: { title: { display: true, text: 'Heures d\'étude' } }, y: { title: { display: true, text: 'Notes /20' }, min: 0, max: 20 } } }
+                });
+            }
+
+            // 2. Nuage de points: Sommeil vs Notes
+            if (analyse.toutes_sommeils && analyse.toutes_notes) {
+                new Chart(document.getElementById('scatterSommeil'), {
+                    type: 'scatter',
+                    data: { datasets: [{ label: 'Étudiants', data: analyse.toutes_sommeils.map((x, i) => ({ x: x, y: analyse.toutes_notes[i] })), backgroundColor: '#ef476f', pointRadius: 8 }] },
+                    options: { responsive: true, scales: { x: { title: { display: true, text: 'Heures de sommeil' } }, y: { title: { display: true, text: 'Notes /20' }, min: 0, max: 20 } } }
+                });
+            }
+
+            // 3. Histogramme: Distribution des notes
+            new Chart(document.getElementById('histogramNotes'), {
+                type: 'bar',
+                data: { labels: ['0-5', '5-10', '10-15', '15-20'], datasets: [{ label: "Nombre d'étudiants", data: counts, backgroundColor: '#06d6a0', borderRadius: 10 }] },
+                options: { responsive: true, scales: { y: { title: { display: true, text: 'Effectif' }, beginAtZero: true } } }
+            });
+
+            // 4. Camembert: Répartition des filières
+            if (filiereLabels.length > 0) {
+                new Chart(document.getElementById('pieChart'), {
+                    type: 'pie',
+                    data: { labels: filiereLabels, datasets: [{ data: filiereCounts, backgroundColor: couleurs.slice(0, filiereLabels.length), borderWidth: 0 }] },
+                    options: { responsive: true, plugins: { legend: { position: 'right' } } }
+                });
+            }
+
+            // 5. Diagramme en barres: Note moyenne par filière
+            if (filieres.length > 0) {
+                new Chart(document.getElementById('barChartFiliere'), {
+                    type: 'bar',
+                    data: { labels: filieres, datasets: [{ label: 'Note moyenne (/20)', data: notesMoyennes, backgroundColor: '#4cc9f0', borderRadius: 10 }] },
+                    options: { responsive: true, scales: { y: { title: { display: true, text: 'Notes /20' }, min: 0, max: 20 } } }
+                });
+            }
+
+        } catch (erreur) {
+            console.error("Erreur:", erreur);
+            document.getElementById('resultat').innerHTML = `<div class="message message-error">❌ Erreur: ${erreur.message}</div>`;
+        }
+    }
+    chargerAnalyse();
+</script>
+{% endblock %}

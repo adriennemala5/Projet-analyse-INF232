@@ -1,0 +1,62 @@
+# ============ ENVIRONNEMENT VIRTUEL ============
+venv/
+env/
+ENV/
+.venv/
+
+# ============ BASE DE DONNÉES ============
+base_de_donnees.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ============ FICHIERS PYTHON ============
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ============ FICHIERS DE LOG ============
+*.log
+*.log.*
+
+# ============ FICHIERS D'IDE ============
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ============ FICHIERS PERSONNELS ============
+ajouter_donnees.py
+*.pyc
+
+# ============ VARIABLES D'ENVIRONNEMENT ============
+.env
+.env.local
+.env.*.local
+
+# ============ CONFIGURATION PERSONNELLE ============
+config.local.py
+
+# ============ FICHIERS TEMPORAIRES ============
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ============ SYSTÈME ============
+Thumbs.db
+desktop.ini
+
+# ============ DOSSIERS DE DISTRIBUTION ============
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ============ FICHIERS GIT ============
+*.orig
+.git/config.local
